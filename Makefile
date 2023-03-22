@@ -1,5 +1,6 @@
 SHELL=/usr/bin/env bash
 PROJECTNAME=$(shell basename "$(PWD)")
+DIR_FULLPATH=$(shell pwd)
 LDFLAGS=-ldflags="-X 'main.buildTime=$(shell date)' -X 'main.lastCommit=$(shell git rev-parse HEAD)' -X 'main.semanticVersion=$(shell git describe --tags --dirty=-dev)'"
 ifeq (${PREFIX},)
 	PREFIX := /usr/local
@@ -174,3 +175,13 @@ adr-gen:
 	@echo "--> Generating ADR"
 	@curl -sSL https://raw.githubusercontent.com/celestiaorg/.github/main/adr-template.md > docs/architecture/adr-$(NUM)-$(TITLE).md
 .PHONY: adr-gen
+
+## telemetry-infra-up: launches the telemetry infrastructure up
+telemetry-infra-up:
+	PWD="${DIR_FULLPATH}/docker/telemetry" docker-compose -f ./docker/telemetry/docker-compose.yml up
+.PHONY: telemetry-infra-up
+
+## telemetry-infra-up: launches the telemetry infrastructure up
+telemetry-infra-down:
+	PWD="${DIR_FULLPATH}/docker/telemetry" docker-compose -f ./docker/telemetry/docker-compose.yml down
+.PHONY: telemetry-infra-down
