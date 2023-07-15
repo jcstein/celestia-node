@@ -26,6 +26,7 @@ import (
 	"github.com/celestiaorg/rsmt2d"
 
 	"github.com/celestiaorg/celestia-node/header"
+	"github.com/celestiaorg/celestia-node/share"
 	"github.com/celestiaorg/celestia-node/share/eds/edstest"
 	"github.com/celestiaorg/celestia-node/share/ipld"
 )
@@ -59,7 +60,7 @@ func NewTestSuite(t *testing.T, num int) *TestSuite {
 }
 
 func (s *TestSuite) genesis() *header.ExtendedHeader {
-	dah := header.EmptyDAH()
+	dah := share.EmptyRoot()
 
 	gen := RandRawHeader(s.t)
 
@@ -77,7 +78,7 @@ func (s *TestSuite) genesis() *header.ExtendedHeader {
 		RawHeader:    *gen,
 		Commit:       commit,
 		ValidatorSet: s.valSet,
-		DAH:          &dah,
+		DAH:          dah,
 	}
 	require.NoError(s.t, eh.Validate())
 	return eh
@@ -144,14 +145,14 @@ func (s *TestSuite) NextHeader() *header.ExtendedHeader {
 		return s.head
 	}
 
-	dah := da.MinDataAvailabilityHeader()
+	dah := share.EmptyRoot()
 	height := s.Head().Height() + 1
 	rh := s.GenRawHeader(height, s.Head().Hash(), libhead.Hash(s.Head().Commit.Hash()), dah.Hash())
 	s.head = &header.ExtendedHeader{
 		RawHeader:    *rh,
 		Commit:       s.Commit(rh),
 		ValidatorSet: s.valSet,
-		DAH:          &dah,
+		DAH:          dah,
 	}
 	require.NoError(s.t, s.head.Validate())
 	return s.head
@@ -210,7 +211,7 @@ func (s *TestSuite) nextProposer() *types.Validator {
 
 // RandExtendedHeader provides an ExtendedHeader fixture.
 func RandExtendedHeader(t *testing.T) *header.ExtendedHeader {
-	dah := header.EmptyDAH()
+	dah := share.EmptyRoot()
 
 	rh := RandRawHeader(t)
 	rh.DataHash = dah.Hash()
@@ -227,7 +228,7 @@ func RandExtendedHeader(t *testing.T) *header.ExtendedHeader {
 		RawHeader:    *rh,
 		Commit:       commit,
 		ValidatorSet: valSet,
-		DAH:          &dah,
+		DAH:          dah,
 	}
 }
 
@@ -325,7 +326,7 @@ func FraudMaker(t *testing.T, faultHeight int64, bServ blockservice.BlockService
 func ExtendedHeaderFromEDS(t *testing.T, height uint64, eds *rsmt2d.ExtendedDataSquare) *header.ExtendedHeader {
 	valSet, vals := RandValidatorSet(10, 10)
 	gen := RandRawHeader(t)
-	dah, err := da.NewDataAvailabilityHeader(eds)
+	dah, err := share.NewRoot(eds)
 	require.NoError(t, err)
 
 	gen.DataHash = dah.Hash()

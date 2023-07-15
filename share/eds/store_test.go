@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/celestiaorg/celestia-app/pkg/da"
 	"github.com/celestiaorg/rsmt2d"
 
 	"github.com/celestiaorg/celestia-node/share"
@@ -271,7 +270,7 @@ func BenchmarkStore(b *testing.B) {
 			// pause the timer for initializing test data
 			b.StopTimer()
 			eds := edstest.RandEDS(b, 128)
-			dah, err := da.NewDataAvailabilityHeader(eds)
+			dah, err := share.NewRoot(eds)
 			require.NoError(b, err)
 			b.StartTimer()
 
@@ -287,7 +286,7 @@ func BenchmarkStore(b *testing.B) {
 			// pause the timer for initializing test data
 			b.StopTimer()
 			eds := edstest.RandEDS(b, 128)
-			dah, err := da.NewDataAvailabilityHeader(eds)
+			dah, err := share.NewRoot(eds)
 			require.NoError(b, err)
 			_ = edsStore.Put(ctx, dah.Hash(), eds)
 			b.StartTimer()
@@ -308,7 +307,7 @@ func newStore(t *testing.T) (*Store, error) {
 
 func randomEDS(t *testing.T) (*rsmt2d.ExtendedDataSquare, share.Root) {
 	eds := edstest.RandEDS(t, 4)
-	dah, err := da.NewDataAvailabilityHeader(eds)
+	dah, err := share.NewRoot(eds)
 	require.NoError(t, err)
 
 	return eds, dah
