@@ -14,7 +14,6 @@ import (
 	mocknet "github.com/libp2p/go-libp2p/p2p/net/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/celestiaorg/celestia-app/pkg/da"
 	libhead "github.com/celestiaorg/go-header"
 	"github.com/celestiaorg/nmt"
 	"github.com/celestiaorg/rsmt2d"
@@ -68,9 +67,9 @@ func TestShrexGetter(t *testing.T) {
 			Height:   1,
 		})
 
-		got, err := getter.GetSharesByNamespace(ctx, &dah, namespace)
+		got, err := getter.GetSharesByNamespace(ctx, dah, namespace)
 		require.NoError(t, err)
-		require.NoError(t, got.Verify(&dah, namespace))
+		require.NoError(t, got.Verify(dah, namespace))
 	})
 
 	t.Run("ND_err_not_found", func(t *testing.T) {
@@ -84,7 +83,7 @@ func TestShrexGetter(t *testing.T) {
 			Height:   1,
 		})
 
-		_, err := getter.GetSharesByNamespace(ctx, &dah, namespace)
+		_, err := getter.GetSharesByNamespace(ctx, dah, namespace)
 		require.ErrorIs(t, err, share.ErrNotFound)
 	})
 
@@ -105,13 +104,13 @@ func TestShrexGetter(t *testing.T) {
 		copy(nID, maxNamespace)
 		nID[share.NamespaceSize-1]--
 		// check for namespace to be between max and min namespace in root
-		require.Len(t, filterRootsByNamespace(&dah, maxNamespace), 1)
+		require.Len(t, filterRootsByNamespace(dah, maxNamespace), 1)
 
-		emptyShares, err := getter.GetSharesByNamespace(ctx, &dah, nID)
+		emptyShares, err := getter.GetSharesByNamespace(ctx, dah, nID)
 		require.NoError(t, err)
 		// no shares should be returned
 		require.Empty(t, emptyShares.Flatten())
-		require.Nil(t, emptyShares.Verify(&dah, nID))
+		require.Nil(t, emptyShares.Verify(dah, nID))
 	})
 
 	t.Run("ND_namespace_not_in_dah", func(t *testing.T) {
@@ -131,13 +130,13 @@ func TestShrexGetter(t *testing.T) {
 		copy(namespace, maxNamesapce)
 		namespace[share.NamespaceSize-1]++
 		// check for namespace to be not in root
-		require.Len(t, filterRootsByNamespace(&dah, namespace), 0)
+		require.Len(t, filterRootsByNamespace(dah, namespace), 0)
 
-		emptyShares, err := getter.GetSharesByNamespace(ctx, &dah, namespace)
+		emptyShares, err := getter.GetSharesByNamespace(ctx, dah, namespace)
 		require.NoError(t, err)
 		// no shares should be returned
 		require.Empty(t, emptyShares.Flatten())
-		require.Nil(t, emptyShares.Verify(&dah, namespace))
+		require.Nil(t, emptyShares.Verify(dah, namespace))
 	})
 
 	t.Run("EDS_Available", func(t *testing.T) {
@@ -152,7 +151,7 @@ func TestShrexGetter(t *testing.T) {
 			Height:   1,
 		})
 
-		got, err := getter.GetEDS(ctx, &dah)
+		got, err := getter.GetEDS(ctx, dah)
 		require.NoError(t, err)
 		require.Equal(t, randEDS.Flattened(), got.Flattened())
 	})
@@ -168,7 +167,7 @@ func TestShrexGetter(t *testing.T) {
 		})
 
 		cancel()
-		_, err := getter.GetEDS(ctx, &dah)
+		_, err := getter.GetEDS(ctx, dah)
 		require.ErrorIs(t, err, context.Canceled)
 	})
 
@@ -183,7 +182,7 @@ func TestShrexGetter(t *testing.T) {
 			Height:   1,
 		})
 
-		_, err := getter.GetEDS(ctx, &dah)
+		_, err := getter.GetEDS(ctx, dah)
 		require.ErrorIs(t, err, share.ErrNotFound)
 	})
 }
@@ -196,7 +195,7 @@ func newStore(t *testing.T) (*eds.Store, error) {
 	return eds.NewStore(tmpDir, ds)
 }
 
-func generateTestEDS(t *testing.T) (*rsmt2d.ExtendedDataSquare, da.DataAvailabilityHeader, share.Namespace) {
+func generateTestEDS(t *testing.T) (*rsmt2d.ExtendedDataSquare, *share.Root, share.Namespace) {
 	eds := edstest.RandEDS(t, 4)
 	dah, err := share.NewRoot(eds)
 	require.NoError(t, err)

@@ -49,7 +49,7 @@ func TestTeeGetter(t *testing.T) {
 		assert.False(t, ok)
 		assert.NoError(t, err)
 
-		retrievedEDS, err := tg.GetEDS(ctx, &dah)
+		retrievedEDS, err := tg.GetEDS(ctx, dah)
 		require.NoError(t, err)
 		require.True(t, share.EqualEDS(randEds, retrievedEDS))
 
@@ -67,12 +67,12 @@ func TestTeeGetter(t *testing.T) {
 		_, err := ipld.ImportShares(ctx, randEds.Flattened(), bServ)
 		require.NoError(t, err)
 
-		retrievedEDS, err := tg.GetEDS(ctx, &dah)
+		retrievedEDS, err := tg.GetEDS(ctx, dah)
 		require.NoError(t, err)
 		require.True(t, share.EqualEDS(randEds, retrievedEDS))
 
 		// no error should be returned, even though the EDS identified by the DAH already exists
-		retrievedEDS, err = tg.GetEDS(ctx, &dah)
+		retrievedEDS, err = tg.GetEDS(ctx, dah)
 		require.NoError(t, err)
 		require.True(t, share.EqualEDS(randEds, retrievedEDS))
 	})
@@ -100,7 +100,7 @@ func TestStoreGetter(t *testing.T) {
 		squareSize := int(randEds.Width())
 		for i := 0; i < squareSize; i++ {
 			for j := 0; j < squareSize; j++ {
-				share, err := sg.GetShare(ctx, &dah, i, j)
+				share, err := sg.GetShare(ctx, dah, i, j)
 				require.NoError(t, err)
 				assert.Equal(t, randEds.GetCell(uint(i), uint(j)), share)
 			}
@@ -108,7 +108,7 @@ func TestStoreGetter(t *testing.T) {
 
 		// root not found
 		_, dah = randomEDS(t)
-		_, err = sg.GetShare(ctx, &dah, 0, 0)
+		_, err = sg.GetShare(ctx, dah, 0, 0)
 		require.ErrorIs(t, err, share.ErrNotFound)
 	})
 
@@ -117,7 +117,7 @@ func TestStoreGetter(t *testing.T) {
 		err = edsStore.Put(ctx, dah.Hash(), randEds)
 		require.NoError(t, err)
 
-		retrievedEDS, err := sg.GetEDS(ctx, &dah)
+		retrievedEDS, err := sg.GetEDS(ctx, dah)
 		require.NoError(t, err)
 		assert.True(t, share.EqualEDS(randEds, retrievedEDS))
 
@@ -132,14 +132,14 @@ func TestStoreGetter(t *testing.T) {
 		err = edsStore.Put(ctx, dah.Hash(), randEds)
 		require.NoError(t, err)
 
-		shares, err := sg.GetSharesByNamespace(ctx, &dah, namespace)
+		shares, err := sg.GetSharesByNamespace(ctx, dah, namespace)
 		require.NoError(t, err)
-		require.NoError(t, shares.Verify(&dah, namespace))
+		require.NoError(t, shares.Verify(dah, namespace))
 		assert.Len(t, shares.Flatten(), 2)
 
 		// namespace not found
 		randNamespace := sharetest.RandV0Namespace()
-		emptyShares, err := sg.GetSharesByNamespace(ctx, &dah, randNamespace)
+		emptyShares, err := sg.GetSharesByNamespace(ctx, dah, randNamespace)
 		require.NoError(t, err)
 		require.Empty(t, emptyShares.Flatten())
 
@@ -176,7 +176,7 @@ func TestIPLDGetter(t *testing.T) {
 		squareSize := int(randEds.Width())
 		for i := 0; i < squareSize; i++ {
 			for j := 0; j < squareSize; j++ {
-				share, err := sg.GetShare(ctx, &dah, i, j)
+				share, err := sg.GetShare(ctx, dah, i, j)
 				require.NoError(t, err)
 				assert.Equal(t, randEds.GetCell(uint(i), uint(j)), share)
 			}
@@ -184,7 +184,7 @@ func TestIPLDGetter(t *testing.T) {
 
 		// root not found
 		_, dah = randomEDS(t)
-		_, err = sg.GetShare(ctx, &dah, 0, 0)
+		_, err = sg.GetShare(ctx, dah, 0, 0)
 		require.ErrorIs(t, err, share.ErrNotFound)
 	})
 
@@ -196,7 +196,7 @@ func TestIPLDGetter(t *testing.T) {
 		err = edsStore.Put(ctx, dah.Hash(), randEds)
 		require.NoError(t, err)
 
-		retrievedEDS, err := sg.GetEDS(ctx, &dah)
+		retrievedEDS, err := sg.GetEDS(ctx, dah)
 		require.NoError(t, err)
 		assert.True(t, share.EqualEDS(randEds, retrievedEDS))
 	})
@@ -210,14 +210,14 @@ func TestIPLDGetter(t *testing.T) {
 		require.NoError(t, err)
 
 		// first check that shares are returned correctly if they exist
-		shares, err := sg.GetSharesByNamespace(ctx, &dah, namespace)
+		shares, err := sg.GetSharesByNamespace(ctx, dah, namespace)
 		require.NoError(t, err)
-		require.NoError(t, shares.Verify(&dah, namespace))
+		require.NoError(t, shares.Verify(dah, namespace))
 		assert.Len(t, shares.Flatten(), 2)
 
 		// namespace not found
 		randNamespace := sharetest.RandV0Namespace()
-		emptyShares, err := sg.GetSharesByNamespace(ctx, &dah, randNamespace)
+		emptyShares, err := sg.GetSharesByNamespace(ctx, dah, randNamespace)
 		require.NoError(t, err)
 		require.Empty(t, emptyShares.Flatten())
 
@@ -229,7 +229,7 @@ func TestIPLDGetter(t *testing.T) {
 	})
 }
 
-func randomEDS(t *testing.T) (*rsmt2d.ExtendedDataSquare, share.Root) {
+func randomEDS(t *testing.T) (*rsmt2d.ExtendedDataSquare, *share.Root) {
 	eds := edstest.RandEDS(t, 4)
 	dah, err := share.NewRoot(eds)
 	require.NoError(t, err)
@@ -238,7 +238,7 @@ func randomEDS(t *testing.T) (*rsmt2d.ExtendedDataSquare, share.Root) {
 
 // randomEDSWithDoubledNamespace generates a random EDS and ensures that there are two shares in the
 // middle that share a namespace.
-func randomEDSWithDoubledNamespace(t *testing.T, size int) (*rsmt2d.ExtendedDataSquare, []byte, share.Root) {
+func randomEDSWithDoubledNamespace(t *testing.T, size int) (*rsmt2d.ExtendedDataSquare, []byte, *share.Root) {
 	n := size * size
 	randShares := sharetest.RandShares(t, n)
 	idx1 := (n - 1) / 2
