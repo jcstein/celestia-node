@@ -6,10 +6,8 @@ import (
 	"time"
 
 	"github.com/ipfs/boxo/exchange/offline"
-	bsrv "github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-datastore"
 	ds_sync "github.com/ipfs/go-datastore/sync"
-	mdutils "github.com/ipfs/go-merkledag/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -36,7 +34,7 @@ func TestTeeGetter(t *testing.T) {
 	err = edsStore.Start(ctx)
 	require.NoError(t, err)
 
-	bServ := mdutils.Bserv()
+	bServ := ipld.NewMemBlockservice()
 	ig := NewIPLDGetter(bServ)
 	tg := NewTeeGetter(ig, edsStore)
 
@@ -163,7 +161,7 @@ func TestIPLDGetter(t *testing.T) {
 	err = edsStore.Start(ctx)
 	require.NoError(t, err)
 
-	bserv := bsrv.New(edsStore.Blockstore(), offline.Exchange(edsStore.Blockstore()))
+	bserv := ipld.NewBlockservice(edsStore.Blockstore(), offline.Exchange(edsStore.Blockstore()))
 	sg := NewIPLDGetter(bserv)
 
 	t.Run("GetShare", func(t *testing.T) {

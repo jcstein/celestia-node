@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	mdutils "github.com/ipfs/go-merkledag/test"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/stretchr/testify/require"
@@ -16,6 +15,7 @@ import (
 	"github.com/celestiaorg/celestia-node/nodebuilder/node"
 	"github.com/celestiaorg/celestia-node/nodebuilder/tests/swamp"
 	"github.com/celestiaorg/celestia-node/share/eds/byzantine"
+	"github.com/celestiaorg/celestia-node/share/ipld"
 )
 
 /*
@@ -51,7 +51,7 @@ func TestFraudProofBroadcasting(t *testing.T) {
 	bridge := sw.NewNodeWithConfig(
 		node.Bridge,
 		cfg,
-		core.WithHeaderConstructFn(headertest.FraudMaker(t, 10, mdutils.Bserv())),
+		core.WithHeaderConstructFn(headertest.FraudMaker(t, 10, ipld.NewMemBlockservice())),
 	)
 
 	err := bridge.Start(ctx)
@@ -133,7 +133,7 @@ func TestFraudProofSyncing(t *testing.T) {
 	bridge := sw.NewNodeWithStore(
 		node.Bridge,
 		store,
-		core.WithHeaderConstructFn(headertest.FraudMaker(t, 10, mdutils.Bserv())),
+		core.WithHeaderConstructFn(headertest.FraudMaker(t, 10, ipld.NewMemBlockservice())),
 	)
 
 	err := bridge.Start(ctx)

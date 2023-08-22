@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ipfs/go-blockservice"
+	"github.com/ipfs/boxo/blockservice"
 
 	"github.com/celestiaorg/celestia-app/pkg/wrapper"
 	"github.com/celestiaorg/nmt"

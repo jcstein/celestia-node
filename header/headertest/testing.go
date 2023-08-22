@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ipfs/go-blockservice"
+	"github.com/ipfs/boxo/blockservice"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/tmhash"
